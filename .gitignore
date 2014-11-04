@@ -21,3 +21,16 @@
 *.i*86
 *.x86_64
 *.hex
+
+# Swap files
+*~
+*.swp
+*.swo
+
+# Archives, zip files
+*.zip
+*.tar*
+
+# Ignore cscope and tags files
+cscope*
+tags
