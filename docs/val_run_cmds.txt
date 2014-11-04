@@ -1,0 +1,23 @@
+./sim bimodal 7 0 0 gcc_trace.txt > val_bimodal_1.txt
+
+./sim bimodal 10 0 0 gcc_trace.txt > val_bimodal_2.txt
+
+./sim bimodal 6 0 0 perl_trace.txt > val_bimodal_4.txt
+
+./sim bimodal 5 0 0 jpeg_trace.txt > val_bimodal_3.txt
+
+./sim gshare 10 4 0 0 gcc_trace.txt > val_gshare_1.txt
+
+./sim gshare 14 9 0 0 gcc_trace.txt > val_gshare_2.txt
+
+./sim gshare 11 5 0 0 jpeg_trace.txt > val_gshare_3.txt
+
+./sim gshare 10 6 0 0 perl_trace.txt > val_gshare_4.txt
+
+./sim hybrid 9 14 11 6 0 0 gcc_trace.txt > val_hybrid_1.txt
+
+./sim hybrid 5 10 8 5 0 0 jpeg_trace.txt > val_hybrid_2.txt
+
+./sim bimodal 7 2048 4 gcc_trace.txt > val_BTB_1.txt
+
+./sim gshare 10 6 2048 4 perl_trace.txt > val_BTB_2.txt
