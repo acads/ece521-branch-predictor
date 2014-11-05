@@ -147,11 +147,11 @@ util_log_base_2(uint32_t num)
  * Params:
  *  num     unsigned 32-bit int which is to be tested for power of 2
  *
- * Returns: boolean
+ * Returns: bool
  *  TRUE if num is a power of two
  *  FALSE otherwise or if num is 0
  **************************************************************************/
-boolean
+bool
 util_is_power_of_2(uint32_t num)
 {
     if (0 == num)
@@ -220,11 +220,11 @@ util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line)
  *  line        ptr to decoded addr as cache line
  *  block_id    ID of the block to check for dirty bit
  *
- * Returns: boolean
+ * Returns: bool
  *  TRUE if the block is dirty
  *  FALSE otherwise
  **************************************************************************/
-inline boolean
+inline bool
 cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line, 
         int32_t block_id)
 {
@@ -241,11 +241,11 @@ cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line,
  *
  * Params:  None
  *
- * Returns: boolean
+ * Returns: bool
  *  TRUE if L2 cache is configure and present
  *  FALSE otherwise
  **************************************************************************/
-inline boolean
+inline bool
 cache_util_is_l2_present(void)
 {
     return (g_l2_present ? TRUE : FALSE);
@@ -259,11 +259,11 @@ cache_util_is_l2_present(void)
  *
  * Params:  None
  *
- * Returns: boolean
+ * Returns: bool
  *  TRUE if victim cache is configure and present
  *  FALSE otherwise
  **************************************************************************/
-inline boolean
+inline bool
 cache_util_is_victim_present(void)
 {
     return (g_victim_present ? TRUE : FALSE);
@@ -333,11 +333,11 @@ cache_util_get_l2(void)
  *  nargs   # of input arguments
  *  args    ptr to user entered arguments
  *
- * Returns: boolean
+ * Returns: bool
  *  TRUE if all arguments are good
  *  FALSE otherwise
  **************************************************************************/
-boolean
+bool
 cache_util_validate_input(int nargs, char **args)
 {
     int         blk_size = 0;

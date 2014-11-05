@@ -13,7 +13,13 @@
 # Generic cache simulator Makefile
 PROG = sim
 INCLS = -I.
-SRCS = bp.c bp_utils.c bp_bimodal.c bp_gselect.c bp_hybrid.c bp_btb.c
+SRCS = bp.c \
+       bp_utils.c \
+       bp_bimodal.c \
+       bp_gselect.c \
+       bp_hybrid.c \
+       bp_btb.c \
+       bp_print.c
 OBJS = $(SRCS:.c=.o)
 CLEANFILES = $(PROG) $(OBJS)
 
@@ -28,8 +34,8 @@ CLEANFILES = $(PROG) $(OBJS)
 # 	2. Program profile data collector
 # 	3. Enable debug traces in teh actual progran code.
 #
-#DEBUG = -g -pg -D DBG_ON
-DEBUG = 
+DEBUG = -g -pg -D DBG_ON
+#DEBUG =
 GRAPH =
 #GRAPH = -D GRAPH_OUTPUT
 

@@ -12,8 +12,12 @@
 #ifndef BP_UTILS_H_
 #define BP_UTILS_H_
 
+#include <stdint.h>
 #include <assert.h>
 
+#include "bp.h"
+
+#if 0
 /* Constants */
 #define CACHE_INPUT_NUM_ARGS    7
 
@@ -29,6 +33,7 @@
 #define CACHE_GET_NAME(CACHE)                   (CACHE->name)
 #define CACHE_GET_REF_TYPE_STR(MREF)    \
     (IS_MEM_REF_READ(MREF) ? g_read : g_write)
+#endif
 
 #if 0
 #define dprint(str, ...)  
@@ -69,22 +74,22 @@ inline unsigned
 util_get_lsb_mask(uint32_t num_lsb_bits);
 inline unsigned
 util_get_field_mask(uint32_t start_bit, uint32_t end_bit);
-boolean
+bool
 util_is_power_of_2(uint32_t num);
 uint32_t
 util_log_base_2(uint32_t num);
 inline uint64_t
 util_get_curr_time(void);
-inline uint32_t
-util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
 int
 util_compare_uint64(const void *a, const void *b);
 
 #if 0
-inline boolean
+inline uint32_t
+util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
+inline bool
 cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line, 
         int32_t block_id);
-boolean
+bool
 cache_util_validate_input(int nargs, char **args);
 void
 cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr, 
@@ -92,9 +97,9 @@ cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr,
 void
 cache_util_encode_mem_addr(cache_tagstore_t *tagstore, cache_line_t *line,
         mem_ref_t *mref);
-inline boolean
+inline bool
 cache_util_is_l2_present(void);
-inline boolean
+inline bool
 cache_util_is_victim_present(void);
 inline cache_generic_t *
 cache_util_get_l1(void);
