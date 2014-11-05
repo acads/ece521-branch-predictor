@@ -56,13 +56,31 @@
 #endif /* DBG_ON */
 
 #ifdef DBG_ON
-#define cache_assert(cond)      assert(cond)
+#define bp_assert(cond)      assert(cond)
 #else
-#define cache_assert(cond)
+#define bp_assert(cond)
 #endif /* DBG_ON */
 
 
 /* Function declarations */
+inline unsigned
+util_get_msb_mask(uint32_t num_msb_bits);
+inline unsigned
+util_get_lsb_mask(uint32_t num_lsb_bits);
+inline unsigned
+util_get_field_mask(uint32_t start_bit, uint32_t end_bit);
+boolean
+util_is_power_of_2(uint32_t num);
+uint32_t
+util_log_base_2(uint32_t num);
+inline uint64_t
+util_get_curr_time(void);
+inline uint32_t
+util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
+int
+util_compare_uint64(const void *a, const void *b);
+
+#if 0
 inline boolean
 cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line, 
         int32_t block_id);
@@ -86,16 +104,7 @@ inline cache_generic_t *
 cache_util_get_l2(void);
 int8_t
 cache_util_get_lru_block_id(cache_tagstore_t *tagstore, cache_line_t *line);
-boolean
-util_is_power_of_2(uint32_t num);
-uint32_t
-util_log_base_2(uint32_t num);
-inline uint64_t
-util_get_curr_time(void);
-inline uint32_t
-util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
-int
-util_compare_uint64(const void *a, const void *b);
+#endif
 
 #endif /* BP_UTILS_H_ */
 

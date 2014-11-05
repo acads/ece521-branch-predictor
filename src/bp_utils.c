@@ -29,7 +29,7 @@
  * Returns: uint32_t
  *  32-bit uint with num_msb_bits masked
  **************************************************************************/
-static inline unsigned
+inline unsigned
 util_get_msb_mask(uint32_t num_msb_bits)
 {
     return ((~0U) << (32 - num_msb_bits));
@@ -47,7 +47,7 @@ util_get_msb_mask(uint32_t num_msb_bits)
  * Returns: uint32_t
  *  32-bit uint with num_lsb_bits masked
  **************************************************************************/
-static inline unsigned
+inline unsigned
 util_get_lsb_mask(uint32_t num_lsb_bits)
 {
     return ((~0U) >> (32 - num_lsb_bits));
@@ -67,7 +67,7 @@ util_get_lsb_mask(uint32_t num_lsb_bits)
  * Returns: uint32_t
  *  32-bit uint with bits from start_bit thru end_bit masked
  **************************************************************************/
-static inline unsigned
+inline unsigned
 util_get_field_mask(uint32_t start_bit, uint32_t end_bit)
 {
     return (util_get_lsb_mask(end_bit + 1) & (~util_get_lsb_mask(start_bit)));
@@ -108,26 +108,6 @@ util_get_curr_time(void)
 
     return ((curr_time.tv_sec * 1000000) + curr_time.tv_usec);
 }
-
-
-/*************************************************************************** 
- * Name:    util_get_block_ref_count
- *
- * Desc:    Returns the ref. count of the set where the block is present.
- *
- * Params:  
- *  tagstore    ptr to the tagstore containing the block
- *  line        cache line containing the index 
- *
- * Returns: uint32_t
- *  Current ref count of the set containing the block.
- **************************************************************************/
-inline uint32_t
-util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line)
-{
-    return (tagstore->set_ref_count[line->index]);
-}
-
 
 /*************************************************************************** 
  * Name:    util_log_base_2
@@ -207,6 +187,27 @@ util_compare_uint64(const void *a, const void *b)
     /* Sorts in non-inreasing order. */
     return (*loc_b - *loc_a);
 }
+
+
+#if 0
+/*************************************************************************** 
+ * Name:    util_get_block_ref_count
+ *
+ * Desc:    Returns the ref. count of the set where the block is present.
+ *
+ * Params:  
+ *  tagstore    ptr to the tagstore containing the block
+ *  line        cache line containing the index 
+ *
+ * Returns: uint32_t
+ *  Current ref count of the set containing the block.
+ **************************************************************************/
+inline uint32_t
+util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line)
+{
+    return (tagstore->set_ref_count[line->index]);
+}
+
 
 
 /***************************************************************************
@@ -391,18 +392,18 @@ cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr,
 
     if (!line) {
         dprint_err("null line\n");
-        cache_assert(0);
+        bp_assert(0);
         goto exit;
     }
 
     if (!tagstore) {
         dprint_err("null tagstore\n");
-        cache_assert(0);
+        bp_assert(0);
         goto exit;
     }
 
     if ((!line) || (!tagstore)) {
-        cache_assert(0);
+        bp_assert(0);
         goto exit;
     }
 
@@ -446,7 +447,7 @@ cache_util_encode_mem_addr(cache_tagstore_t *tagstore, cache_line_t *line,
     cache_generic_t *cache = NULL;
 
     if ((!tagstore) || (!line) || (!mref)) {
-        cache_assert(0);
+        bp_assert(0);
         goto exit;
     }
 
@@ -488,7 +489,7 @@ cache_util_get_lru_block_id(cache_tagstore_t *tagstore, cache_line_t *line)
     cache_tag_data_t    *tag_data = NULL;
 
     if ((!tagstore) || (!line)) {
-        cache_assert(0);
+        bp_assert(0);
         goto error_exit;
     }
 
@@ -509,5 +510,5 @@ cache_util_get_lru_block_id(cache_tagstore_t *tagstore, cache_line_t *line)
 error_exit:
     return CACHE_RV_ERR;
 }
-
+#endif
 
