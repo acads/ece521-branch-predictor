@@ -2,7 +2,7 @@
  * ECE 521 - Computer Design Techniques, Fall 2014
  * Project 2 - Branch Predictor Implementation 
  *
- * This module implements the gselect branch predictor. 
+ * This module implements the gshare branch predictor. 
  *
  * Author: Aravindhan Dhanasekaran <adhanas@ncsu.edu>
  */
@@ -14,4 +14,15 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include "bp_utils.h"
+
+
+/***************************************************************************
+ * Name:    
+ *
+ * Desc:    
+ *
+ * Params:
+ *
+ * Returns: 
+ **************************************************************************/
 

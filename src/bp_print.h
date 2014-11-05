@@ -8,8 +8,6 @@
  * Author: Aravindhan Dhanasekaran <adhanas@ncsu.edu>
  */
 
-#ifdef DBG_ON
-
 #ifndef BP_PRINT_H_
 #define BP_PRINT_H_
 
@@ -17,10 +15,16 @@
 #include "bp_utils.h"
 
 /* Externs */
+void
+bp_print_stats(struct bp_input *bp);
+
+#ifdef DBG_ON
 extern void
 bp_print_input(struct bp_input *bp);
+extern void
+bp_print_bimodal_curr_entry(uint8_t *table, uint32_t index, int pc, bool taken,
+        uint8_t old_value);
+#endif /* DBG_ON */
 
 #endif /* BP_PRINT_H_ */
-
-#endif /* DBG_ON */
 

@@ -16,7 +16,7 @@ INCLS = -I.
 SRCS = bp.c \
        bp_utils.c \
        bp_bimodal.c \
-       bp_gselect.c \
+       bp_gshare.c \
        bp_hybrid.c \
        bp_btb.c \
        bp_print.c

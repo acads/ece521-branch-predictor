@@ -16,9 +16,7 @@
 
 #include "bp.h"
 #include "bp_utils.h"
-#ifdef DBG_ON
 #include "bp_print.h"
-#endif /* DBG_ON */
 
 /* Global data */
 struct bp_bimodal       g_bp_bimodal;
@@ -31,6 +29,17 @@ struct bp_nargs_table   g_bp_args_table[BP_TYPE_MAX];
 const char              *g_bp_type_bimodal = "bimodal";
 const char              *g_bp_type_gshare = "gshare";
 const char              *g_bp_type_hybrid = "hybrid";
+
+/* Function pointers to bp type handlers as indexed by bp_type */
+void (* const g_bp_handlers[]) (struct bp_input *, int, bool) = {
+    NULL,
+    NULL,
+    bp_bimodal_handler,
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
 
 /*************************************************************************** 
  * Name:    bp_init 
@@ -63,30 +72,93 @@ bp_init(void)
     return;
 }
 
+
 /*************************************************************************** 
  * Name:    bp_cleanup 
  *
  * Desc:    bp cleanup routine. Usually called in exit path.
  *
- * Params:  None.
+ * Params:
+ *  bp      ptr to global branch predictor data.
  *
  * Returns: Nothing.
  **************************************************************************/
 void
-bp_cleanup(void)
+bp_cleanup(struct bp_input *bp)
 {
+    if (!bp)
+        goto exit;
+
+    if (bp->bimodal) {
+        bp_bimodal_cleanup(bp);
+        bp->bimodal = NULL;
+    }
+
+    if (bp->gshare) {
+        bp->gshare = NULL;
+    }
+
+    if (bp->hybrid) {
+        bp->hybrid = NULL;
+    }
+
+    if (bp->btb) {
+        bp->btb = NULL;
+    }
+
+    memset(bp, 0, sizeof(*bp));
+
+exit:
     return;
 }
 
+
 /*************************************************************************** 
- * Name:    
+ * Name:    bp_parse_tracefile
  *
- * Desc:    
+ * Desc:    Parses each entry in the parse file and calls the configured bp
+ *          type's handler.
  *
  * Params:
+ *  bp          ptr to global bp input data
  *
- * Returns: 
+ * Returns: bool
+ *  TRUE on success, FALSE otherwise.
  **************************************************************************/
+bool
+bp_parse_tracefile(struct bp_input *bp)
+{
+    bool        taken = FALSE;
+    char        newline = '\n';
+    char        trace_taken = '\0';
+    char        *trace_fpath = NULL;
+    FILE        *trace_fptr = NULL;
+    uint32_t    pc = 0;
+
+    if (!bp) {
+        bp_assert(0);
+        goto error_exit;
+    }
+
+    trace_fpath = bp->tracefile;
+    trace_fptr = fopen(trace_fpath, "r");
+     if (!trace_fptr) {
+        printf("Error: Unable to open trace file %s.\n", trace_fpath);
+        dprint_err("unable to open trace file %s.\n", trace_fpath);
+        goto error_exit;
+     }
+
+     while(fscanf(trace_fptr, "%x %c%c", &pc, &trace_taken, &newline) != EOF) {
+         bp->npredicts += 1;
+         taken = ('t' == trace_taken) ? TRUE : FALSE;
+         (*g_bp_handlers[bp->type]) (bp, pc, taken);
+     }
+
+     return TRUE;
+
+error_exit:
+     return FALSE;
+}
 
 
 /*************************************************************************** 
@@ -131,6 +203,7 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
         
         bp->type = BP_TYPE_BIMODAL;
         bp->bimodal->m2 = atoi(argv[++iter]);
+        bp->bimodal->nentries = (1U << bp->bimodal->m2);
         bp->gshare = NULL;
         bp->hybrid = NULL;
         dprint_info("bp type %s\n", type);
@@ -191,10 +264,13 @@ error_exit:
 int
 main(int argc, char **argv)
 {
+    struct bp_input *bp = NULL;
+
     bp_init();
+    bp = &g_bp;
 
     /* Parse and validate input args, and fill-in the global bp structure. */
-    if (!(bp_parse_input(argc, argv, &g_bp))) {
+    if (!(bp_parse_input(argc, argv, bp))) {
         dprint_err("error in parsing input arguments\n");
         goto error_exit;
     }
@@ -203,10 +279,45 @@ main(int argc, char **argv)
     bp_print_input(&g_bp);
 #endif /* DBG_ON */
 
-    bp_cleanup();
+    switch (bp->type) {
+    case BP_TYPE_BIMODAL:
+        bp_bimodal_init(bp);
+        break;
+
+    case BP_TYPE_GSHARE:
+        break;
+
+    case BP_TYPE_HYBRID:
+        break;
+
+    default:
+        dprint_err("invalid bp type %u\n", bp->type);
+        bp_assert(0);
+        goto error_exit;
+    }
+
+    /* Process the tracefile. */
+    bp_parse_tracefile(bp);
+
+    /* Print predictor stats and table contents. */
+    bp_print_stats(bp);
+
+    bp_cleanup(bp);
     return 0;
 
 error_exit:
-    bp_cleanup();
+    bp_cleanup(bp);
     return -1;
 }
+
+
+/***************************************************************************
+ * Name:    
+ *
+ * Desc:    
+ *
+ * Params:
+ *
+ * Returns: 
+ **************************************************************************/
+
