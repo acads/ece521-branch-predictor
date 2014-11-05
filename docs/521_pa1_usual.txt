@@ -1,0 +1,24 @@
+Added support to parse, validate and store user input to bp_sim
+
+Fix Description
+===============
+    * Added required bp and bp type data structures.
+    * Added code to parse, validate and store user given input.
+    * Added debug-mode-only print code (a new file).
+    * Enabled debug mode in Makefile.
+
+Stats
+=====
+
+
+
+/*************************************************************************** 
+ * Name:    
+ *
+ * Desc:    
+ *
+ * Params:
+ *
+ * Returns: 
+ **************************************************************************/
+
