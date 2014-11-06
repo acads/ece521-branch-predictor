@@ -32,7 +32,7 @@
  *
  * Returns: unsigned 32-bit gshare index to gshare predictor table
  **************************************************************************/
-static inline uint32_t
+inline uint32_t
 bp_gshare_get_index(uint32_t pc, struct bp_gshare *gs)
 {
     uint16_t    m = 0;
@@ -124,7 +124,7 @@ error_exit:
 void
 bp_gshare_cleanup(struct bp_input *bp)
 {
-    if (!bp && !bp->gshare)
+    if (!bp || !bp->gshare)
         goto exit;
 
     if (bp->gshare->table) {
@@ -136,6 +136,119 @@ bp_gshare_cleanup(struct bp_input *bp)
 
 exit:
     return;
+}
+
+
+/***************************************************************************
+ * Name:    bp_gshare_update_bhr
+ *
+ * Desc:    Updates the bhr based on the actual branch outcome.
+ *
+ * Params:
+ *  bp      ptr to global bp data
+ *  taken   actually branch taken or not?
+ *
+ * Returns: Nothing.
+ **************************************************************************/
+inline void
+bp_gshare_update_bhr(struct bp_input *bp, bool taken)
+{
+    if (taken)
+        bp->gshare->bhr |= (1U << (bp->gshare->n - 1));
+    else
+        bp->gshare->bhr &= ~(1U << (bp->gshare->n - 1));
+
+    return;
+}
+
+
+/***************************************************************************
+ * Name:    bp_gshare_update
+ *
+ * Desc:    Updates the gshare predictor table value based on the actual
+ *          branch outcome.
+ *
+ * Params:
+ *  bp      ptr to global bp data
+ *  pc      program counter value
+ *  taken   actually branch taken or not?
+ *
+ * Returns: Nothing.
+ **************************************************************************/
+void
+bp_gshare_update(struct bp_input *bp, uint32_t pc, bool taken)
+{
+    uint8_t     curr_value;
+    uint32_t    index;
+
+    if (!bp && !bp->gshare) {
+        bp_assert(0);
+        goto exit;
+    }
+
+    /*
+     * Update our predictor table based on the current value and the actual
+     * taken flag. States BP_NOT_TAKEN and BP_TAKEN are saturated states. So,
+     * don't bother about them.
+     */
+    index = bp_gshare_get_index(pc, bp->gshare);
+    curr_value = bp->gshare->table[index];
+    if (taken) {
+        switch (curr_value) {
+        case BP_NOT_TAKEN:
+        case BP_WNOT_TAKEN:
+        case BP_W_TAKEN:
+            bp->gshare->table[index] += 1;
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (curr_value) {
+        case BP_WNOT_TAKEN:
+        case BP_W_TAKEN:
+        case BP_TAKEN:
+            bp->gshare->table[index] -= 1;
+            break;
+        default:
+            break;
+        }
+    }
+
+exit:
+    return;
+}
+
+
+/***************************************************************************
+ * Name:    bp_gshare_lookup
+ *
+ * Desc:    Looksup the gsharepredictor table and predicts taken/not 
+ *          taken.
+ *
+ * Params:
+ *  bp      ptr to global bp data
+ *  pc      program counter value
+ *  taken   actually branch taken or not?
+ *
+ * Returns: bool
+ *  TRUE if predictor predicts taken, FALSE otherwise.
+ **************************************************************************/
+bool
+bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken)
+{
+    uint32_t    index = 0;
+
+    if (!bp && !bp->gshare) {
+        bp_assert(0);
+        goto exit;
+    }   
+
+    index = bp_gshare_get_index(pc, bp->gshare);
+    return (BP_IS_TAKEN(bp->gshare->table[index]) ? TRUE : FALSE);
+
+exit:
+    return FALSE;
 }
 
 

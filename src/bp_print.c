@@ -166,6 +166,52 @@ exit:
 
 
 /***************************************************************************
+ * Name:    bp_print_hybrid_curr_entry
+ *
+ * Desc:    Prints the currently being processed entry in hybrid table in
+ *          TAs debug run format.
+ *
+ * Params:
+ *
+ * Returns: Nothing
+ **************************************************************************/
+void
+bp_print_hybrid_curr_entry(struct bp_input *bp, uint32_t pc, bool taken,
+        bool hy_taken, uint8_t old_value)
+{
+    uint32_t    index = 0;
+    uint32_t    hy_index = 0;
+
+    if (!bp || !bp->hybrid) {
+        bp_assert(0);
+        goto exit;
+    }
+
+    hy_index = bp_hybrid_get_index(pc, bp->hybrid);
+    dprint("%u. ", bp_get_curr_entry_id());
+    dprint("PC: %x %c\n", pc, (taken ? 't' : 'n'));
+    dprint("CHOOSER index: %u old value: %u new value %u\n",
+            hy_index, old_value, bp->hybrid->table[index]);
+
+    /* Print the chosen predictor details. */
+    if (hy_taken) {
+        index = bp_gshare_get_index(pc, bp->gshare);
+        dprint("GSHARE index: %u old value: %u new value %u\n",
+                index, 0, bp->gshare->table[index]);
+    } else {
+        index = bp_bimodal_get_index(pc, bp->bimodal->m2);
+        dprint("BIMODAL index: %u old value: %u new value %u\n",
+                index, 0, bp->bimodal->table[index]);
+    }
+    dprint("BHR UPDATED: %u\n", bp->gshare->bhr);
+
+
+exit:
+    return;
+}
+
+
+/***************************************************************************
  * Name:    bp_print_input
  *
  * Desc:    Pretty prints the user entered config of bp.

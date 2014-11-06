@@ -30,7 +30,7 @@
  *
  * Returns: unsigned 32-bit bimodal index
  **************************************************************************/
-static inline uint32_t
+inline uint32_t
 bp_bimodal_get_index(int pc, uint16_t m)
 {
     uint32_t mask = 0;
@@ -101,7 +101,7 @@ error_exit:
 void
 bp_bimodal_cleanup(struct bp_input *bp)
 {
-    if (!bp && !bp->bimodal)
+    if (!bp || !bp->bimodal)
         goto exit;
 
     if (bp->bimodal->table) {
@@ -113,6 +113,82 @@ bp_bimodal_cleanup(struct bp_input *bp)
 
 exit:
     return;
+}
+
+void
+bp_bimodal_update(struct bp_input *bp, uint32_t pc, bool taken)
+{
+    uint8_t     curr_value = 0;
+    uint32_t    index = 0;
+
+    if (!bp && !bp->bimodal) {
+        bp_assert(0);
+        goto exit;
+    }
+
+    /*
+     * Update our predictor table based on the current value and the actual
+     * taken flag. States BP_NOT_TAKEN and BP_TAKEN are saturated states. So,
+     * don't bother about them.
+     */
+    index = bp_bimodal_get_index(pc, bp->bimodal->m2);
+    curr_value = bp->bimodal->table[index];
+    if (taken) {
+        switch (curr_value) {
+        case BP_NOT_TAKEN:
+        case BP_WNOT_TAKEN:
+        case BP_W_TAKEN:
+            bp->bimodal->table[index] += 1;
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (curr_value) {
+        case BP_WNOT_TAKEN:
+        case BP_W_TAKEN:
+        case BP_TAKEN:
+            bp->bimodal->table[index] -= 1;
+            break;
+        default:
+            break;
+        }
+    }
+
+exit:
+    return;
+}
+
+
+/***************************************************************************
+ * Name:    bp_bimodal_lookup
+ *
+ * Desc:    Looksup the bimodal predictor table and predicts taken/not 
+ *          taken.
+ *
+ * Params:
+ *  bp      ptr to global bp data
+ *  pc      program counter value
+ *  taken   actually branch taken or not?
+ *
+ * Returns: bool
+ *  TRUE if predictor predicts taken, FALSE otherwise.
+ **************************************************************************/
+bool
+bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken)
+{
+    uint32_t    index = 0;
+
+    if (!bp && !bp->bimodal) {
+        bp_assert(0);
+        goto exit;
+    }
+
+    index = bp_bimodal_get_index(pc, bp->bimodal->m2);
+    return (BP_IS_TAKEN(bp->bimodal->table[index]) ? TRUE : FALSE);
+
+exit:
+    return FALSE;
 }
 
 

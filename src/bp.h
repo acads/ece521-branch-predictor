@@ -34,6 +34,9 @@
 #define bool    unsigned char
 #endif /* !bool */
 
+/* Util macros. */
+#define BP_IS_TAKEN(VALUE)  (VALUE > BP_WNOT_TAKEN)
+
 typedef enum bp_types__ {
     BP_TYPE_START       = 0,
     BP_TYPE_1BIT        = 1,
@@ -98,6 +101,9 @@ struct bp_input {
 /* Predictor handler function pointer */
 void (*bp_handler_type) (struct bp_input *, uint32_t, bool);
 
+/* Externs */
+extern struct bp_input g_bp;
+
 /* Function declarations */
 inline uint32_t
 bp_get_curr_entry_id(void);
@@ -108,6 +114,12 @@ void
 bp_bimodal_cleanup(struct bp_input *bp);
 void
 bp_bimodal_handler(struct bp_input *bp, uint32_t pc, bool taken);
+inline uint32_t
+bp_bimodal_get_index(int pc, uint16_t m);
+bool
+bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken);
+void
+bp_bimodal_update(struct bp_input *bp, uint32_t pc, bool taken);
 
 void
 bp_gshare_init(struct bp_input *gs);
@@ -115,5 +127,23 @@ void
 bp_gshare_cleanup(struct bp_input *bp);
 void
 bp_gshare_handler(struct bp_input *bp, uint32_t pc, bool taken);
+inline uint32_t
+bp_gshare_get_index(uint32_t pc, struct bp_gshare *gs);
+bool
+bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken);
+inline void
+bp_gshare_update_bhr(struct bp_input *bp, bool taken);
+void
+bp_gshare_update(struct bp_input *bp, uint32_t pc, bool taken);
+
+void
+bp_hybrid_init(struct bp_input *gs);
+void
+bp_hybrid_cleanup(struct bp_input *bp);
+void
+bp_hybrid_handler(struct bp_input *bp, uint32_t pc, bool taken);
+uint32_t
+bp_hybrid_get_index(uint32_t pc, struct bp_hybrid *hy);
+
 #endif /* BP_H_ */
 

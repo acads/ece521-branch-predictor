@@ -27,6 +27,9 @@ bp_print_bimodal_curr_entry(uint8_t *table, uint32_t index, uint32_t pc,
 void
 bp_print_gshare_curr_entry(struct bp_gshare *gs, uint32_t index, uint32_t pc,
         bool taken, uint8_t old_value);
+void
+bp_print_hybrid_curr_entry(struct bp_input *bp, uint32_t pc, bool taken,
+        bool hy_taken, uint8_t old_value);
 #endif /* DBG_ON */
 
 #endif /* BP_PRINT_H_ */

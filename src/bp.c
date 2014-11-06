@@ -37,7 +37,7 @@ void (* const g_bp_handlers[]) (struct bp_input *, uint32_t, bool) = {
     bp_bimodal_handler,
     NULL,
     bp_gshare_handler,
-    NULL,
+    bp_hybrid_handler,
     NULL
 };
 
@@ -99,16 +99,14 @@ bp_cleanup(struct bp_input *bp)
         bp_bimodal_cleanup(bp);
         bp->bimodal = NULL;
     }
-
     if (bp->gshare) {
         bp_gshare_cleanup(bp);
         bp->gshare = NULL;
     }
-
     if (bp->hybrid) {
+        bp_hybrid_cleanup(bp);
         bp->hybrid = NULL;
     }
-
     if (bp->btb) {
         bp->btb = NULL;
     }
@@ -247,9 +245,14 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
         }
         bp->type = BP_TYPE_HYBRID;
         bp->hybrid->k = atoi(argv[++iter]);
+        bp->hybrid->nentries = (1U << bp->hybrid->k);
+
         bp->gshare->m1 = atoi(argv[++iter]);
         bp->gshare->n = atoi(argv[++iter]);
+        bp->gshare->nentries = (1U << bp->gshare->m1);
+
         bp->bimodal->m2 = atoi(argv[++iter]);
+        bp->bimodal->nentries = (1U << bp->bimodal->m2);
         dprint_info("bp type %s\n", type);
     } else {
         dprint_err("bad bp type %s\n", type);
@@ -292,14 +295,12 @@ main(int argc, char **argv)
     case BP_TYPE_BIMODAL:
         bp_bimodal_init(bp);
         break;
-
     case BP_TYPE_GSHARE:
         bp_gshare_init(bp);
         break;
-
     case BP_TYPE_HYBRID:
+        bp_hybrid_init(bp);
         break;
-
     default:
         dprint_err("invalid bp type %u\n", bp->type);
         bp_assert(0);
