@@ -119,17 +119,47 @@ error_exit:
  * Returns: Nothing
  **************************************************************************/
 void
-bp_print_bimodal_curr_entry(uint8_t *table, uint32_t index, int pc, bool taken,
-        uint8_t old_value)
+bp_print_bimodal_curr_entry(uint8_t *table, uint32_t index, uint32_t pc,
+        bool taken, uint8_t old_value)
 {
     if (!table) {
         bp_assert(0);
         goto exit;
     }
 
-    dprint(" PC: %x %c\n", pc, (taken ? 'y' : 'n'));
-    dprint("BIMODAL index: %u old value: %u new value: %u\n",
+    dprint(" PC: %x %c\n", pc, (taken ? 't' : 'n'));
+    dprint("BIMODAL index: %u old value: %u new value %u\n",
             index, old_value, table[index]);
+exit:
+    return;
+}
+
+
+/***************************************************************************
+ * Name:    bp_print_bimodal_curr_entry
+ *
+ * Desc:    Prints the currently being processed entry in gshare table in
+ *          TAs debug run format.
+ *
+ * Params:
+ *
+ * Returns: Nothing
+ **************************************************************************/
+void
+bp_print_gshare_curr_entry(struct bp_gshare *gs, uint32_t index, uint32_t pc,
+        bool taken, uint8_t old_value)
+{
+    if (!gs && !gs->table) {
+        bp_assert(0);
+        goto exit;
+    }
+
+    dprint("%u. ", bp_get_curr_entry_id());
+    dprint("PC: %x %c\n", pc, (taken ? 't' : 'n'));
+    dprint("GSHARE index: %u old value: %u new value %u\n",
+            index, old_value, gs->table[index]);
+    dprint("BHR UPDATED: %u\n", gs->bhr);
+
 exit:
     return;
 }

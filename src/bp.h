@@ -62,7 +62,7 @@ struct bp_bimodal {
 struct bp_gshare {
     uint16_t    m1;         /* # of LSB PC bits to index predictor table    */
     uint16_t    n;          /* # of bits in global history register         */
-    uint8_t     bhr;        /* global branch history register               */
+    uint16_t    bhr;        /* global branch history register               */
     uint32_t    nentries;   /* # of entries in table                        */
     uint8_t     *table;     /* ptr to gshare table; init'zd to BP_W_TAKEN   */
     uint32_t    nmisses;    /* # of miss predictions                        */
@@ -96,15 +96,24 @@ struct bp_input {
 };
 
 /* Predictor handler function pointer */
-void (*bp_handler_type) (struct bp_input *, int, bool);
+void (*bp_handler_type) (struct bp_input *, uint32_t, bool);
 
 /* Function declarations */
+inline uint32_t
+bp_get_curr_entry_id(void);
+
 void
 bp_bimodal_init(struct bp_input *bp);
 void
 bp_bimodal_cleanup(struct bp_input *bp);
 void
-bp_bimodal_handler(struct bp_input *bp, int pc, bool taken);
+bp_bimodal_handler(struct bp_input *bp, uint32_t pc, bool taken);
 
+void
+bp_gshare_init(struct bp_input *gs);
+void
+bp_gshare_cleanup(struct bp_input *bp);
+void
+bp_gshare_handler(struct bp_input *bp, uint32_t pc, bool taken);
 #endif /* BP_H_ */
 

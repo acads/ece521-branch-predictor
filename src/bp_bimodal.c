@@ -37,7 +37,7 @@ bp_bimodal_get_index(int pc, uint16_t m)
     uint32_t index = 0;
 
     /* Bimodal indices are bits PC[m+1..2] */
-    mask = util_get_field_mask(2, m+1);
+    mask = util_get_field_mask(2, m + 1);
     index = pc & mask;
     index >>= 2;
 
@@ -68,9 +68,10 @@ bp_bimodal_init(struct bp_input *bp)
     }
 
     bi = bp->bimodal;
-    bi->table = (uint8_t *)  calloc(1, (sizeof(*bi->table) * bi->nentries));
+    bi->table = (uint8_t *) calloc(1, (sizeof(*bi->table) * bi->nentries));
     if (!bi->table) {
         dprint_err("FATAL: insufficient memory\n");
+        printf("FATAL: calloc failed.. insufficient memory\n");
         bp_assert(0);
         goto error_exit;
     }
@@ -100,10 +101,8 @@ error_exit:
 void
 bp_bimodal_cleanup(struct bp_input *bp)
 {
-    if (!bp && !bp->bimodal) {
-        bp_assert(0);
+    if (!bp && !bp->bimodal)
         goto exit;
-    }
 
     if (bp->bimodal->table) {
         free(bp->bimodal->table);
@@ -142,7 +141,8 @@ bp_bimodal_lookup_and_update(uint8_t *table, uint32_t index, bool taken)
             ((!taken) && (curr_value < BP_W_TAKEN)))
         bi_predict = TRUE;
 
-    /* Update our predictor table based on the current value and the actual
+    /*
+     * Update our predictor table based on the current value and the actual
      * taken flag. States BP_NOT_TAKEN and BP_TAKEN are saturated states. So,
      * don't bother about them.
      */
@@ -151,11 +151,11 @@ bp_bimodal_lookup_and_update(uint8_t *table, uint32_t index, bool taken)
         case BP_NOT_TAKEN:
         case BP_WNOT_TAKEN:
         case BP_W_TAKEN:
-                table[index] += 1;
-                break;
+            table[index] += 1;
+            break;
 
         default:
-                break;
+            break;
         }
     } else {
         switch (curr_value) {
@@ -188,7 +188,7 @@ bp_bimodal_lookup_and_update(uint8_t *table, uint32_t index, bool taken)
  * Returns: Nothing.
  **************************************************************************/
 void
-bp_bimodal_handler(struct bp_input *bp, int pc, bool taken)
+bp_bimodal_handler(struct bp_input *bp, uint32_t pc, bool taken)
 {
     bool                bi_taken = FALSE;
 #ifdef DBG_ON

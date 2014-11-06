@@ -31,15 +31,21 @@ const char              *g_bp_type_gshare = "gshare";
 const char              *g_bp_type_hybrid = "hybrid";
 
 /* Function pointers to bp type handlers as indexed by bp_type */
-void (* const g_bp_handlers[]) (struct bp_input *, int, bool) = {
+void (* const g_bp_handlers[]) (struct bp_input *, uint32_t, bool) = {
     NULL,
     NULL,
     bp_bimodal_handler,
     NULL,
-    NULL,
+    bp_gshare_handler,
     NULL,
     NULL
 };
+
+inline uint32_t
+bp_get_curr_entry_id(void)
+{
+    return g_bp.npredicts;
+}
 
 /*************************************************************************** 
  * Name:    bp_init 
@@ -95,6 +101,7 @@ bp_cleanup(struct bp_input *bp)
     }
 
     if (bp->gshare) {
+        bp_gshare_cleanup(bp);
         bp->gshare = NULL;
     }
 
@@ -218,10 +225,12 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
         bp->type = BP_TYPE_GSHARE;
         bp->gshare->m1 = atoi(argv[++iter]);
         bp->gshare->n = atoi(argv[++iter]);
+        bp->gshare->nentries = (1U << bp->gshare->m1);
         if (!bp->gshare->n) {
             /* If n is 0, gshare behaves as a bimodal bp. */
             bp->type = BP_TYPE_BIMODAL;
             bp->bimodal->m2 = bp->gshare->m1;
+            bp->bimodal->nentries = bp->gshare->nentries;
             bp->gshare = NULL;
             dprint_info("bp type %s (as n = 0)\n", type);
         } else {
@@ -276,7 +285,7 @@ main(int argc, char **argv)
     }
 
 #ifdef DBG_ON
-    bp_print_input(&g_bp);
+    //bp_print_input(&g_bp);
 #endif /* DBG_ON */
 
     switch (bp->type) {
@@ -285,6 +294,7 @@ main(int argc, char **argv)
         break;
 
     case BP_TYPE_GSHARE:
+        bp_gshare_init(bp);
         break;
 
     case BP_TYPE_HYBRID:
