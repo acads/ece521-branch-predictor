@@ -11,6 +11,8 @@
 #ifndef BP_H_
 #define BP_H_
 
+#include "bp_btb.h"
+
 /* Constants */
 #define BP_MIN_ARGS         6
 #define BP_MAX_ARGS         9
@@ -35,6 +37,7 @@
 #endif /* !bool */
 
 /* Util macros. */
+#define BP_IS_BTB_PRESENT   (g_bp.btb_present)
 #define BP_IS_TAKEN(VALUE)  (VALUE > BP_WNOT_TAKEN)
 
 typedef enum bp_types__ {
@@ -79,11 +82,13 @@ struct bp_hybrid {
     uint32_t    nmisses;    /* # of miss predictions                        */
 };
 
+#if 0
 /* User given btb config */
 struct bp_btb {
     uint16_t    size;   /* size of btb              */
     uint16_t    assoc;  /* set associativity of btb */
 };
+#endif
 
 /* Main bp structure to store user given predictor config */
 struct bp_input {
@@ -95,7 +100,7 @@ struct bp_input {
     struct bp_bimodal   *bimodal;                       /* bimodal config   */
     struct bp_gshare    *gshare;                        /* gshare config    */
     struct bp_hybrid    *hybrid;                        /* hybrid config    */
-    struct bp_btb       *btb;                           /* btb config       */
+    cache_generic_t     *btb;                           /* btb config       */
 };
 
 /* Predictor handler function pointer */

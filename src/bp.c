@@ -15,6 +15,7 @@
 #include <sys/time.h>
 
 #include "bp.h"
+#include "bp_btb.h"
 #include "bp_utils.h"
 #include "bp_print.h"
 
@@ -22,9 +23,11 @@
 struct bp_bimodal       g_bp_bimodal;
 struct bp_gshare        g_bp_gshare;
 struct bp_hybrid        g_bp_hybprid;
-struct bp_btb           g_bp_btb;
 struct bp_input         g_bp;
 struct bp_nargs_table   g_bp_args_table[BP_TYPE_MAX];
+
+cache_generic_t         g_bp_btb;
+cache_tagstore_t        g_bp_btb_ts;
 
 const char              *g_bp_type_bimodal = "bimodal";
 const char              *g_bp_type_gshare = "gshare";
@@ -156,6 +159,33 @@ bp_parse_tracefile(struct bp_input *bp)
      while(fscanf(trace_fptr, "%x %c%c", &pc, &trace_taken, &newline) != EOF) {
          bp->npredicts += 1;
          taken = ('t' == trace_taken) ? TRUE : FALSE;
+
+         if (BP_IS_BTB_PRESENT) {
+             bool       in_btb = FALSE;
+             mem_ref_t  mem_ref;
+
+             memset(&mem_ref, 0, sizeof(mem_ref));
+             mem_ref.ref_type = MEM_REF_TYPE_READ;
+             mem_ref.ref_addr = pc;
+
+             /*
+              * In case of BTB miss, the branch is considered to be not taken.
+              * Increment the BTB miss-predict counter if the branch is 
+              * actually taken. 
+              * Fetch the next address.
+              */
+            in_btb = cache_handle_memory_request(bp->btb, &mem_ref);
+            if (!in_btb) {
+#ifdef DBG_ON
+                dprint("%u. PC : %x %c\n", bp->npredicts, pc, trace_taken);
+#endif
+                bp->btb->nmisses += 1;
+                if (taken)
+                    bp->btb->nmiss_predicts += 1;
+                 continue;
+             }
+            bp->btb->nhits += 1;
+         }
          (*g_bp_handlers[bp->type]) (bp, pc, taken);
      }
 
@@ -182,8 +212,9 @@ error_exit:
 static bool
 bp_parse_input(int argc, char **argv, struct bp_input *bp)
 {
-    char    *type = NULL;
-    uint8_t iter = 0;
+    char        *type = NULL;
+    uint8_t     iter = 0;
+    uint32_t    btb_size = 0;
 
     if ((0 == argc) || (!bp)) {
         dprint_err("invalid arguments\n");
@@ -259,9 +290,20 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
         goto error_exit;
     }
 
-    bp->btb->size = atoi(argv[++iter]);
-    bp->btb->assoc = atoi(argv[++iter]);
-    bp->btb_present = ((bp->btb->size && bp->btb->assoc) ? TRUE : FALSE);
+    /* BTB details */
+    btb_size = atoi(argv[++iter]);
+    if (btb_size) {
+        cache_init(bp->btb, "btb", "", CACHE_LEVEL_1);
+
+        bp->btb->size = btb_size; 
+        bp->btb->set_assoc = atoi(argv[++iter]);
+        bp->btb->blk_size = CACHE_DEF_BLK_SIZE;
+        bp->btb->repl_plcy = CACHE_REPL_PLCY_LRU;
+        bp->btb->write_plcy = CACHE_WRITE_PLCY_WBWA;
+        cache_tagstore_init(bp->btb, &g_bp_btb_ts);
+        
+        bp->btb_present = TRUE;
+    }
 
     strncpy(bp->tracefile, argv[++iter], MAX_FILE_NAME_LEN);
 

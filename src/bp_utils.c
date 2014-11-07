@@ -14,6 +14,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/time.h>
+
+#include "bp.h"
+#include "bp_btb.h"
 #include "bp_utils.h"
 
 
@@ -189,25 +192,69 @@ util_compare_uint64(const void *a, const void *b)
 }
 
 
-#if 0
 /*************************************************************************** 
- * Name:    util_get_block_ref_count
+ * Name:    cache_util_decode_mem_addr
  *
- * Desc:    Returns the ref. count of the set where the block is present.
+ * Desc:    Decodes the incoming memory address reference into cache 
+ *          understandable format in a cache line.
+ *          i.e., <addr> = <tag, index, block_offset>
  *
- * Params:  
- *  tagstore    ptr to the tagstore containing the block
- *  line        cache line containing the index 
+ * Params:
+ *  tagstore    ptr to the tagstore of the cache for which addr is decoded
+ *  addr        incoming 32-bit memory address
+ *  line        ptr to store the decoded addr
  *
- * Returns: uint32_t
- *  Current ref count of the set containing the block.
+ * Returns: Nothing
  **************************************************************************/
-inline uint32_t
-util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line)
+void
+cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr, 
+        cache_line_t *line)
 {
-    return (tagstore->set_ref_count[line->index]);
-}
+    uint32_t tag_mask = 0;
+    uint32_t index_mask = 0;
+    uint32_t offset_mask = 0;
 
+    if (!line) {
+        dprint_err("null line\n");
+        bp_assert(0);
+        goto exit;
+    }
+
+    if (!tagstore) {
+        dprint_err("null tagstore\n");
+        bp_assert(0);
+        goto exit;
+    }
+
+    if ((!line) || (!tagstore)) {
+        bp_assert(0);
+        goto exit;
+    }
+
+#if 0
+    tag_mask = util_get_msb_mask(tagstore->num_tag_bits);
+    offset_mask = util_get_lsb_mask(tagstore->num_offset_bits);
+    index_mask = 
+        util_get_field_mask(tagstore->num_offset_bits, 
+                (tagstore->num_offset_bits + 
+                    tagstore->num_index_bits) - 1);
+#endif
+
+    tag_mask = util_get_msb_mask(tagstore->num_tag_bits);
+    offset_mask = util_get_lsb_mask(tagstore->num_offset_bits);
+    index_mask = 
+        util_get_field_mask(2, tagstore->num_index_bits + 1); 
+
+    /* Ignore the last 2 bits in PC. */
+    //addr >>= 2;
+
+    line->tag = ((addr & tag_mask) >> (32 - tagstore->num_tag_bits));
+    line->index = ((addr & index_mask) >> tagstore->num_offset_bits);
+    line->offset = (addr & offset_mask);
+
+exit:
+    return;
+}
 
 
 /***************************************************************************
@@ -234,6 +281,26 @@ cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line,
 }
 
 
+/*************************************************************************** 
+ * Name:    util_get_block_ref_count
+ *
+ * Desc:    Returns the ref. count of the set where the block is present.
+ *
+ * Params:  
+ *  tagstore    ptr to the tagstore containing the block
+ *  line        cache line containing the index 
+ *
+ * Returns: uint32_t
+ *  Current ref count of the set containing the block.
+ **************************************************************************/
+inline uint32_t
+util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line)
+{
+    return (tagstore->set_ref_count[line->index]);
+}
+
+
+#if 0
 /*************************************************************************** 
  * Name:    cache_util_is_l2_present
  *
@@ -365,64 +432,6 @@ cache_util_validate_input(int nargs, char **args)
     }
 
     return TRUE;
-}
-
-
-/*************************************************************************** 
- * Name:    cache_util_decode_mem_addr
- *
- * Desc:    Decodes the incoming memory address reference into cache 
- *          understandable format in a cache line.
- *          i.e., <addr> = <tag, index, block_offset>
- *
- * Params:
- *  tagstore    ptr to the tagstore of the cache for which addr is decoded
- *  addr        incoming 32-bit memory address
- *  line        ptr to store the decoded addr
- *
- * Returns: Nothing
- **************************************************************************/
-void
-cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr, 
-        cache_line_t *line)
-{
-    uint32_t tag_mask = 0;
-    uint32_t index_mask = 0;
-    uint32_t offset_mask = 0;
-
-    if (!line) {
-        dprint_err("null line\n");
-        bp_assert(0);
-        goto exit;
-    }
-
-    if (!tagstore) {
-        dprint_err("null tagstore\n");
-        bp_assert(0);
-        goto exit;
-    }
-
-    if ((!line) || (!tagstore)) {
-        bp_assert(0);
-        goto exit;
-    }
-
-    tag_mask = util_get_msb_mask(tagstore->num_tag_bits);
-    offset_mask = util_get_lsb_mask(tagstore->num_offset_bits);
-    index_mask = 
-        util_get_field_mask(tagstore->num_offset_bits, 
-                (tagstore->num_offset_bits + 
-                    tagstore->num_index_bits) - 1); 
-
-    line->tag = ((addr & tag_mask) >> (32 - tagstore->num_tag_bits));
-    line->index = ((addr & index_mask) >> tagstore->num_offset_bits);
-    line->offset = (addr & offset_mask);
-
-    //dprint_info("addr 0x%x, tag 0x%x, index %u, offset %u\n", 
-      //      addr, line->tag, line->index, line->offset);
-
-exit:
-    return;
 }
 
 

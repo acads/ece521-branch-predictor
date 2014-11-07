@@ -292,7 +292,7 @@ bp_bimodal_handler(struct bp_input *bp, uint32_t pc, bool taken)
         bi->nmisses += 1;
 
 #ifdef DBG_ON
-    bp_print_bimodal_curr_entry(bi->table, bi_index, pc, taken, old_value);
+    bp_print_bimodal_curr_entry(bp, bi_index, pc, taken, old_value);
 #endif
 
 exit:

@@ -20,6 +20,7 @@
 #if 0
 /* Constants */
 #define CACHE_INPUT_NUM_ARGS    7
+#endif
 
 /* Util macros */
 #define IS_MEM_REF_READ(REF)    (MEM_REF_TYPE_READ == REF->ref_type)
@@ -33,17 +34,15 @@
 #define CACHE_GET_NAME(CACHE)                   (CACHE->name)
 #define CACHE_GET_REF_TYPE_STR(MREF)    \
     (IS_MEM_REF_READ(MREF) ? g_read : g_write)
-#endif
+#define dprint_dbg(str, ...)
+#define dprint_dp(str, ...)  
+#define dprint(str, ...)     printf(str, ##__VA_ARGS__)
 
 #if 0
 #define dprint(str, ...)  
 #define dprint_dp(str, ...) printf(str, ##__VA_ARGS__)
 #define dprint_dbg(str, ...) printf(str, ##__VA_ARGS__)
 #endif
-#define dprint_dbg(str, ...)
-#define dprint_dp(str, ...)  
-#define dprint(str, ...)     printf(str, ##__VA_ARGS__)
-
 #ifdef DBG_ON
 #define dprint_info(str, ...)               \
     printf("bp_info: %s %u# " str,       \
@@ -83,17 +82,19 @@ util_get_curr_time(void);
 int
 util_compare_uint64(const void *a, const void *b);
 
-#if 0
-inline uint32_t
-util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
-inline bool
-cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line, 
-        int32_t block_id);
-bool
-cache_util_validate_input(int nargs, char **args);
 void
 cache_util_decode_mem_addr(cache_tagstore_t *tagstore, uint32_t addr, 
         cache_line_t *line);
+inline bool
+cache_util_is_block_dirty(cache_tagstore_t *tagstore, cache_line_t *line, 
+        int32_t block_id);
+inline uint32_t
+util_get_block_ref_count(cache_tagstore_t *tagstore, cache_line_t *line);
+
+
+#if 0
+bool
+cache_util_validate_input(int nargs, char **args);
 void
 cache_util_encode_mem_addr(cache_tagstore_t *tagstore, cache_line_t *line,
         mem_ref_t *mref);

@@ -56,13 +56,35 @@ bp_print_stats(struct bp_input *bp)
     case BP_TYPE_BIMODAL:
         dprint("./sim %s %u %u %u %s\n",
                 g_bp_type_str[bp->type], bp->bimodal->m2,
-                bp->btb->size, bp->btb->assoc, bp->tracefile);
+                bp->btb->size, bp->btb->set_assoc, bp->tracefile);
+
         dprint("OUTPUT\n");
-        dprint("number of predictions: %u\n", bp->npredicts);
-        dprint("number of mispredictions: %u\n", bp->bimodal->nmisses);
-        dprint("misprediction rate: %.2f%s\n",
-            (((double) bp->bimodal->nmisses / (double) bp->npredicts) * 100),
-            "%");
+        if (BP_IS_BTB_PRESENT) {
+            dprint("size of BTB: %u\n", bp->btb->size);
+            dprint("number of branches: %u\n", bp->npredicts);
+            dprint("number of predictions from branch predictor: %u\n",
+                    bp->btb->nhits);
+            dprint("number of mispredictions from branch predictor: %u\n",
+                    bp->bimodal->nmisses);
+            dprint("number of branches miss in BTB and taken: %u\n",
+                    bp->btb->nmiss_predicts);
+            dprint("total mispredictions: %u\n",
+                    (bp->bimodal->nmisses + bp->btb->nmiss_predicts));
+            dprint("misprediction rate: %.2f%s\n",
+                (((double) (bp->btb->nmiss_predicts + bp->bimodal->nmisses) / 
+                  (double) bp->npredicts) * 100),
+                "%");
+
+            dprint("FINAL BTB CONTENTS\n");
+            cache_print_sim_data(bp->btb);
+        } else {
+            dprint("number of predictions: %u\n", bp->npredicts);
+            dprint("number of mispredictions: %u\n", bp->bimodal->nmisses);
+            dprint("misprediction rate: %.2f%s\n",
+                (((double) bp->bimodal->nmisses / (double) bp->npredicts) * 100),
+                "%");
+        }
+
         dprint("FINAL BIMODAL CONTENTS\n");
         bp_print_table(bp->bimodal->nentries, bp->bimodal->table);
         break;
@@ -70,13 +92,34 @@ bp_print_stats(struct bp_input *bp)
     case BP_TYPE_GSHARE:
         dprint("./sim %s %u %u %u %u %s\n",
                 g_bp_type_str[bp->type], bp->gshare->m1, bp->gshare->n,
-                bp->btb->size, bp->btb->assoc, bp->tracefile);
+                bp->btb->size, bp->btb->set_assoc, bp->tracefile);
         dprint("OUTPUT\n");
-        dprint("number of predictions: %u\n", bp->npredicts);
-        dprint("number of mispredictions: %u\n", bp->gshare->nmisses);
-        dprint("misprediction rate: %.2f%s\n",
-            (((double) bp->gshare->nmisses / (double) bp->npredicts) * 100),
-            "%");
+        if (BP_IS_BTB_PRESENT) {
+            dprint("size of BTB: %u\n", bp->btb->size);
+            dprint("number of branches: %u\n", bp->npredicts);
+            dprint("number of predictions from branch predictor: %u\n",
+                    bp->btb->nhits);
+            dprint("number of mispredictions from branch predictor: %u\n",
+                    bp->gshare->nmisses);
+            dprint("number of branches miss in BTB and taken: %u\n",
+                    bp->btb->nmiss_predicts);
+            dprint("total mispredictions: %u\n",
+                    (bp->gshare->nmisses + bp->btb->nmiss_predicts));
+            dprint("misprediction rate: %.2f%s\n",
+                (((double) (bp->btb->nmiss_predicts + bp->gshare->nmisses) / 
+                  (double) bp->npredicts) * 100),
+                "%");
+
+            dprint("FINAL BTB CONTENTS\n");
+            cache_print_sim_data(bp->btb);
+        } else {
+            dprint("number of predictions: %u\n", bp->npredicts);
+            dprint("number of mispredictions: %u\n", bp->bimodal->nmisses);
+            dprint("misprediction rate: %.2f%s\n",
+                (((double) bp->bimodal->nmisses / (double) bp->npredicts) * 100),
+                "%");
+        }
+        
         dprint("FINAL GSHARE CONTENTS\n");
         bp_print_table(bp->gshare->nentries, bp->gshare->table);
         break;
@@ -85,7 +128,7 @@ bp_print_stats(struct bp_input *bp)
         dprint("./sim %s %u %u %u %u %u %u %s\n",
                 g_bp_type_str[bp->type], bp->hybrid->k,
                 bp->gshare->m1, bp->gshare->n, bp->bimodal->m2,
-                bp->btb->size, bp->btb->assoc, bp->tracefile);
+                bp->btb->size, bp->btb->set_assoc, bp->tracefile);
         dprint("OUTPUT\n");
         dprint("number of predictions: %u\n", bp->npredicts);
         dprint("number of mispredictions: %u\n", bp->hybrid->nmisses);
@@ -126,17 +169,19 @@ error_exit:
  * Returns: Nothing
  **************************************************************************/
 void
-bp_print_bimodal_curr_entry(uint8_t *table, uint32_t index, uint32_t pc,
+bp_print_bimodal_curr_entry(struct bp_input *bp, uint32_t index, uint32_t pc,
         bool taken, uint8_t old_value)
 {
-    if (!table) {
+    if (!bp || !bp->bimodal || !bp->bimodal->table) {
         bp_assert(0);
         goto exit;
     }
 
-    dprint(" PC: %x %c\n", pc, (taken ? 't' : 'n'));
+    dprint("%u. PC: %x %c\n", bp->npredicts, pc, (taken ? 't' : 'n'));
+    if (BP_IS_BTB_PRESENT)
+        dprint("BTB HIT\n");
     dprint("BIMODAL index: %u old value: %u new value %u\n",
-            index, old_value, table[index]);
+            index, old_value, bp->bimodal->table[index]);
 exit:
     return;
 }
@@ -264,7 +309,7 @@ bp_print_input(struct bp_input *bp)
 
     if (bp->btb_present) {
         dprint("    btb_size: %u\n", bp->btb->size);
-        dprint("    btb_assoc: %u\n", bp->btb->assoc);
+        dprint("    btb_assoc: %u\n", bp->btb->set_assoc);
     }
 
     dprint("    tracefile: %s\n", bp->tracefile);

@@ -42,7 +42,7 @@ GRAPH =
 
 # Compiler options
 CC = gcc
-OPTIMIZER = -O0
+OPTIMIZER = -O5
 WARN = -Wunused-but-set-variable -Werror -Wall
 CFLAGS = -c -Wall $(DEBUG) $(GRAPH) $(WARN) $(OPTIMIZER) $(INCLS) -g
 LFLAGS = -Wall $(DEBUG) $(GRAPH) $(WARN) $(OPTIMIZER) $(INCLS) -g
