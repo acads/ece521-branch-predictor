@@ -215,6 +215,7 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
     char        *type = NULL;
     uint8_t     iter = 0;
     uint32_t    btb_size = 0;
+    uint32_t    btb_assoc = 0;
 
     if ((0 == argc) || (!bp)) {
         dprint_err("invalid arguments\n");
@@ -292,11 +293,12 @@ bp_parse_input(int argc, char **argv, struct bp_input *bp)
 
     /* BTB details */
     btb_size = atoi(argv[++iter]);
+    btb_assoc = atoi(argv[++iter]);
     if (btb_size) {
         cache_init(bp->btb, "btb", "", CACHE_LEVEL_1);
 
         bp->btb->size = btb_size; 
-        bp->btb->set_assoc = atoi(argv[++iter]);
+        bp->btb->set_assoc = btb_assoc;
         bp->btb->blk_size = CACHE_DEF_BLK_SIZE;
         bp->btb->repl_plcy = CACHE_REPL_PLCY_LRU;
         bp->btb->write_plcy = CACHE_WRITE_PLCY_WBWA;
