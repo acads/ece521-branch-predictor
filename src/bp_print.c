@@ -75,8 +75,10 @@ bp_print_stats(struct bp_input *bp)
                   (double) bp->npredicts) * 100),
                 "%");
 
+            dprint("\n");
             dprint("FINAL BTB CONTENTS\n");
             cache_print_sim_data(bp->btb);
+            dprint("\n");
         } else {
             dprint("number of predictions: %u\n", bp->npredicts);
             dprint("number of mispredictions: %u\n", bp->bimodal->nmisses);
@@ -110,13 +112,15 @@ bp_print_stats(struct bp_input *bp)
                   (double) bp->npredicts) * 100),
                 "%");
 
+            dprint("\n");
             dprint("FINAL BTB CONTENTS\n");
             cache_print_sim_data(bp->btb);
+            dprint("\n");
         } else {
             dprint("number of predictions: %u\n", bp->npredicts);
-            dprint("number of mispredictions: %u\n", bp->bimodal->nmisses);
+            dprint("number of mispredictions: %u\n", bp->gshare->nmisses);
             dprint("misprediction rate: %.2f%s\n",
-                (((double) bp->bimodal->nmisses / (double) bp->npredicts) * 100),
+                (((double) bp->gshare->nmisses / (double) bp->npredicts) * 100),
                 "%");
         }
         
