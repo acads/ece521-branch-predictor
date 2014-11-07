@@ -1,23 +1,46 @@
-./sim bimodal 7 0 0 gcc_trace.txt > val_bimodal_1.txt
+# bimodal
+time ./sim bimodal 7 0 0 gcc_trace.txt > ad_bi_gcc_1.v
+diff -iw ../docs/val_bimodal_1.txt ad_bi_gcc_1.v
 
-./sim bimodal 10 0 0 gcc_trace.txt > val_bimodal_2.txt
+time ./sim bimodal 10 0 0 gcc_trace.txt > ad_bi_gcc_2.v
+diff -iw ../docs/val_bimodal_2.txt ad_bi_gcc_2.v
 
-./sim bimodal 6 0 0 perl_trace.txt > val_bimodal_4.txt
+time ./sim bimodal 5 0 0 jpeg_trace.txt > ad_bi_jpeg_3.v
+diff -iw ../docs/val_bimodal_3.txt ad_bi_jpeg_3.v
 
-./sim bimodal 5 0 0 jpeg_trace.txt > val_bimodal_3.txt
+time ./sim bimodal 6 0 0 perl_trace.txt > ad_bi_perl_4.v
+diff -iw ../docs/val_bimodal_4.txt ad_bi_perl_4.v
 
-./sim gshare 10 4 0 0 gcc_trace.txt > val_gshare_1.txt
 
-./sim gshare 14 9 0 0 gcc_trace.txt > val_gshare_2.txt
 
-./sim gshare 11 5 0 0 jpeg_trace.txt > val_gshare_3.txt
+# gshare
+time ./sim gshare 10 4 0 0 gcc_trace.txt > ad_gs_gcc_1.v
+diff -iw ../docs/val_gshare_1.txt ad_gs_gcc_1.v
 
-./sim gshare 10 6 0 0 perl_trace.txt > val_gshare_4.txt
+time ./sim gshare 14 9 0 0 gcc_trace.txt > ad_gs_gcc_2.v
+diff -iw ../docs/val_gshare_2.txt ad_gs_gcc_2.v
 
-./sim hybrid 9 14 11 6 0 0 gcc_trace.txt > val_hybrid_1.txt
+time ./sim gshare 11 5 0 0 jpeg_trace.txt > ad_gs_jpeg_3.v
+diff -iw ../docs/val_gshare_3.txt ad_gs_jpeg_3.v
 
-./sim hybrid 5 10 8 5 0 0 jpeg_trace.txt > val_hybrid_2.txt
+time ./sim gshare 10 6 0 0 perl_trace.txt > ad_gs_perl_4.v
+diff -iw ../docs/val_gshare_4.txt ad_gs_perl_4.v
 
-./sim bimodal 7 2048 4 gcc_trace.txt > val_BTB_1.txt
 
-./sim gshare 10 6 2048 4 perl_trace.txt > val_BTB_2.txt
+
+# hybrid
+time ./sim hybrid 9 14 11 6 0 0 gcc_trace.txt > ad_hy_gcc_1.v
+diff -iw ../docs/val_hybrid_1.txt ad_hy_gcc_1.v
+
+time ./sim hybrid 5 10 8 5 0 0 jpeg_trace.txt > ad_hy_jpeg_2.v
+diff -iw ../docs/val_hybrid_2.txt ad_hy_jpeg_2.v
+
+
+
+# btb
+time ./sim bimodal 7 2048 4 gcc_trace.txt > ad_btb_gcc_1.v
+diff -iw ../docs/val_BTB_1.txt ad_btb_gcc_1.v
+
+time ./sim gshare 10 6 2048 4 perl_trace.txt > ad_btb_perl_2.v
+diff -iw ../docs/val_BTB_2.txt ad_btb_perl_2.v
+

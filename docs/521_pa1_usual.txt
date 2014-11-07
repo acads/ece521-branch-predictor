@@ -1,14 +1,25 @@
-Added support to parse, validate and store user input to bp_sim
+Added support for hybrid predictor
+
+NOTE: It's not working. Currently debugging the issue.
 
 Fix Description
 ===============
-    * Added required bp and bp type data structures.
-    * Added code to parse, validate and store user given input.
-    * Added debug-mode-only print code (a new file).
-    * Enabled debug mode in Makefile.
+    * New handler to process address entires for hybrid bp type.
+    * Added hybrid support (index fetch, table lookup and update).
+    * Added new lookup-only and update-only routines for gshare & bimodal (as
+      hybrid predictor first does a lookup on both tables and based on some
+      calculations, updates just one of them).
 
 Stats
 =====
+ src/bp.c         |   15 ++--
+ src/bp.h         |   30 ++++++
+ src/bp_bimodal.c |   80 +++++++++++++++-
+ src/bp_gshare.c  |  117 +++++++++++++++++++++-
+ src/bp_hybrid.c  |  290 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ src/bp_print.c   |   46 +++++++++
+ src/bp_print.h   |    3 +
+ 7 files changed, 570 insertions(+), 11 deletions(-)
 
 
 
