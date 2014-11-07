@@ -92,8 +92,15 @@ bp_print_stats(struct bp_input *bp)
         dprint("misprediction rate: %.2f%s\n",
             (((double) bp->hybrid->nmisses / (double) bp->npredicts) * 100),
             "%");
+
         dprint("FINAL CHOOSER CONTENTS\n");
         bp_print_table(bp->hybrid->nentries, bp->hybrid->table);
+
+        dprint("FINAL GSHARE CONTENTS\n");
+        bp_print_table(bp->gshare->nentries, bp->gshare->table);
+
+        dprint("FINAL BIMODAL CONTENTS\n");
+        bp_print_table(bp->bimodal->nentries, bp->bimodal->table);
         break;
 
     default:
@@ -177,7 +184,7 @@ exit:
  **************************************************************************/
 void
 bp_print_hybrid_curr_entry(struct bp_input *bp, uint32_t pc, bool taken,
-        bool hy_taken, uint8_t old_value)
+        uint32_t predictor, uint8_t pred_old_value, uint8_t old_value)
 {
     uint32_t    index = 0;
     uint32_t    hy_index = 0;
@@ -191,18 +198,21 @@ bp_print_hybrid_curr_entry(struct bp_input *bp, uint32_t pc, bool taken,
     dprint("%u. ", bp_get_curr_entry_id());
     dprint("PC: %x %c\n", pc, (taken ? 't' : 'n'));
     dprint("CHOOSER index: %u old value: %u new value %u\n",
-            hy_index, old_value, bp->hybrid->table[index]);
+            hy_index, old_value, bp->hybrid->table[hy_index]);
 
     /* Print the chosen predictor details. */
-    if (hy_taken) {
+    if (BP_TYPE_GSHARE == predictor) {
+        index = 0;
         index = bp_gshare_get_index(pc, bp->gshare);
         dprint("GSHARE index: %u old value: %u new value %u\n",
-                index, 0, bp->gshare->table[index]);
-    } else {
+                index, pred_old_value, bp->gshare->table[index]);
+    } else if (BP_TYPE_BIMODAL == predictor) {
+        index = 0;
         index = bp_bimodal_get_index(pc, bp->bimodal->m2);
         dprint("BIMODAL index: %u old value: %u new value %u\n",
-                index, 0, bp->bimodal->table[index]);
+                index, pred_old_value, bp->bimodal->table[index]);
     }
+    bp_gshare_update_bhr(bp, taken);
     dprint("BHR UPDATED: %u\n", bp->gshare->bhr);
 
 

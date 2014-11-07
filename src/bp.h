@@ -117,7 +117,8 @@ bp_bimodal_handler(struct bp_input *bp, uint32_t pc, bool taken);
 inline uint32_t
 bp_bimodal_get_index(int pc, uint16_t m);
 bool
-bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken);
+bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken,
+        uint8_t *old_value);
 void
 bp_bimodal_update(struct bp_input *bp, uint32_t pc, bool taken);
 
@@ -130,7 +131,8 @@ bp_gshare_handler(struct bp_input *bp, uint32_t pc, bool taken);
 inline uint32_t
 bp_gshare_get_index(uint32_t pc, struct bp_gshare *gs);
 bool
-bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken);
+bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken,
+        uint8_t *old_value);
 inline void
 bp_gshare_update_bhr(struct bp_input *bp, bool taken);
 void

@@ -167,6 +167,7 @@ bp_hybrid_update(struct bp_input *bp, uint32_t pc,
             case BP_WNOT_TAKEN:
             case BP_W_TAKEN:
                 bp->hybrid->table[index] += 1;
+                break;
             default:
                 break;
             }
@@ -176,6 +177,7 @@ bp_hybrid_update(struct bp_input *bp, uint32_t pc,
             case BP_W_TAKEN:
             case BP_TAKEN:
                 bp->hybrid->table[index] -= 1;
+                break;
             default:
                 break;
             }
@@ -187,6 +189,7 @@ bp_hybrid_update(struct bp_input *bp, uint32_t pc,
             case BP_WNOT_TAKEN:
             case BP_W_TAKEN:
                 bp->hybrid->table[index] += 1;
+                break;
             default:
                 break;
             }
@@ -196,6 +199,7 @@ bp_hybrid_update(struct bp_input *bp, uint32_t pc,
             case BP_W_TAKEN:
             case BP_TAKEN:
                 bp->hybrid->table[index] -= 1;
+                break;
             default:
                 break;
             }
@@ -247,6 +251,8 @@ exit:
  *          Finally, updates the chooser table and either gshare/bimodal
  *          based on the prediction.
  *
+ *          Refer to section 3.2 in docs/pa1_spec.pdf.
+ *
  * Params:
  *  bp      ptr to the global bp data
  *  pc      program counter value
@@ -260,9 +266,13 @@ bp_hybrid_handler(struct bp_input *bp, uint32_t pc, bool taken)
     bool                bi_taken = FALSE;
     bool                gs_taken = FALSE;
     bool                hy_taken = FALSE;
+    uint8_t             bi_value = 0;
+    uint8_t             gs_value = 0;
 #ifdef DBG_ON
     uint8_t             old_value = 0;
+    uint8_t             pred_old_value = 0;
     uint32_t            hy_index = 0;
+    uint32_t            predictor = 0;
 #endif /* DBG_ON */
     struct bp_hybrid    *hy = NULL;
 
@@ -278,28 +288,42 @@ bp_hybrid_handler(struct bp_input *bp, uint32_t pc, bool taken)
 #endif /* DBG_ON */
 
     /* Check the bimodal and gshare predictors. */
-    bi_taken = bp_bimodal_lookup(bp, pc, taken);
-    gs_taken = bp_gshare_lookup(bp, pc, taken);
+    bi_taken = bp_bimodal_lookup(bp, pc, taken, &bi_value);
+    gs_taken = bp_gshare_lookup(bp, pc, taken, &gs_value);
 
-    /* Lookup hybrid table. */
-    hy_taken = bp_hybrid_lookup(bp, pc, taken);
-
-    /* Update the predictor tables now. */
-    bp_gshare_update_bhr(bp, taken);
-    if (hy_taken)
+    /* 
+     * Hybrid predictor predicts based on the current chooser table
+     * and other two predictors.
+     */
+    if (bp_hybrid_lookup(bp, pc, taken)) {
+        hy_taken = gs_taken;
         bp_gshare_update(bp, pc, taken);
-    else
+#ifdef DBG_ON
+        pred_old_value = gs_value;
+        predictor = BP_TYPE_GSHARE;
+#endif /* DBG_ON */
+    } else {
+        hy_taken = bi_taken;
         bp_bimodal_update(bp, pc, taken);
+#ifdef DBG_ON
+        pred_old_value = bi_value;
+        predictor = BP_TYPE_BIMODAL;
+#endif /* DBG_ON */
+    }
+#ifndef DBG_ON
+    bp_gshare_update_bhr(bp, taken);
+#endif /* !DBG_ON */
 
     /* Update the hybrid table based on other predictor outcomes. */
     bp_hybrid_update(bp, pc, taken, bi_taken, gs_taken);
 
     /* Finally update the hybrid miss predicts. */
-    if (!hy_taken) 
+    if (hy_taken != taken)
         hy->nmisses += 1;
 
 #ifdef DBG_ON
-    bp_print_hybrid_curr_entry(bp, pc, taken, hy_taken, old_value);
+    bp_print_hybrid_curr_entry(bp, pc, taken, predictor,
+            pred_old_value, old_value);
 #endif /* DBG_ON */
 
 exit:

@@ -153,6 +153,7 @@ exit:
 inline void
 bp_gshare_update_bhr(struct bp_input *bp, bool taken)
 {
+    bp->gshare->bhr >>= 1;
     if (taken)
         bp->gshare->bhr |= (1U << (bp->gshare->n - 1));
     else
@@ -235,7 +236,8 @@ exit:
  *  TRUE if predictor predicts taken, FALSE otherwise.
  **************************************************************************/
 bool
-bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken)
+bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken,
+        uint8_t *old_value)
 {
     uint32_t    index = 0;
 
@@ -245,6 +247,7 @@ bp_gshare_lookup(struct bp_input *bp, uint32_t pc, bool taken)
     }   
 
     index = bp_gshare_get_index(pc, bp->gshare);
+    *old_value = bp->gshare->table[index];
     return (BP_IS_TAKEN(bp->gshare->table[index]) ? TRUE : FALSE);
 
 exit:
@@ -256,6 +259,8 @@ exit:
  * Name:    bp_gshare_lookup_and_update
  *
  * Desc:    Gshare predictor lookup/update routine.
+ *
+ *          Refer to section 3.1.2 in docs/pa1_spec.pdf.
  *
  * Params:
  *  gs      ptr to the gshare predictor data

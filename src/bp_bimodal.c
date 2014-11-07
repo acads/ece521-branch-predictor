@@ -175,7 +175,8 @@ exit:
  *  TRUE if predictor predicts taken, FALSE otherwise.
  **************************************************************************/
 bool
-bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken)
+bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken,
+        uint8_t *old_value)
 {
     uint32_t    index = 0;
 
@@ -185,6 +186,7 @@ bp_bimodal_lookup(struct bp_input *bp, uint32_t pc, bool taken)
     }
 
     index = bp_bimodal_get_index(pc, bp->bimodal->m2);
+    *old_value = bp->bimodal->table[index];
     return (BP_IS_TAKEN(bp->bimodal->table[index]) ? TRUE : FALSE);
 
 exit:
@@ -196,6 +198,8 @@ exit:
  * Name:    bp_bimodal_lookup_and_update
  *
  * Desc:    Bimodal predictor lookup/update routine.
+ *
+ *          Refer to section 3.1.1 in docs/pa1_spec.pdf.
  *
  * Params:
  *  table   ptr to bimodal predictor table
