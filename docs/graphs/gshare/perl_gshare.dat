@@ -1,0 +1,52 @@
+# gshare predictor misprediction rates for gcc_trace.txt for different values
+# of m and n
+
+#n = 2
+#m  misprediction rate
+7   24.34
+8   16.92
+9   13.57
+10  10.63
+11  10.11
+12  9.04
+
+
+# n = 4
+#m  misprediction rate
+7   25.96
+8   19.09
+9   14.68
+10  11.35
+11  9.68
+12  8.09
+
+
+# n = 6
+#m  misprediction rate
+7   28.71
+8   20.45
+9   16.25
+10  11.52
+11  8.60
+12  7.50
+
+
+# n = 8
+#m  misprediction rate
+8   24.79
+9   17.66
+10  12.42
+11  9.00
+12  6.49
+
+
+# n = 10
+#m  misprediction rate
+10  14.57
+11  8.98
+12  6.71
+
+
+# n = 12
+#m  misprediction rate
+12  7.16
