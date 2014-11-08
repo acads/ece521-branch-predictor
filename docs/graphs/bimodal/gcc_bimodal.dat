@@ -1,0 +1,9 @@
+# bimodal predictor miss predict rates for gcc_trace.txt
+
+#n  miss-prediction rate
+7   26.65
+8   22.43
+9   18.49
+10  15.67
+11  13.65
+12  12.47
