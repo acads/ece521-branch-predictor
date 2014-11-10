@@ -161,10 +161,6 @@ cache_tagstore_init(cache_generic_t *cache, cache_tagstore_t *tagstore)
     cache->tagstore = tagstore;
     tagstore->cache = cache;
 
-#ifdef DBG_ON
-    //cache_util_print_tagstore(cache);
-#endif /* DBG_ON */
-
 exit:
     return;
 

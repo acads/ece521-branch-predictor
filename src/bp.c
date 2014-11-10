@@ -111,6 +111,7 @@ bp_cleanup(struct bp_input *bp)
         bp->hybrid = NULL;
     }
     if (bp->btb) {
+        cache_cleanup(bp->btb);
         bp->btb = NULL;
     }
 
@@ -332,7 +333,7 @@ main(int argc, char **argv)
     }
 
 #ifdef DBG_ON
-    //bp_print_input(&g_bp);
+    bp_print_input(&g_bp);
 #endif /* DBG_ON */
 
     switch (bp->type) {
