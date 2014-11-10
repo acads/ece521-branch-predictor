@@ -34,8 +34,8 @@ CLEANFILES = $(PROG) $(OBJS)
 # 	2. Program profile data collector
 # 	3. Enable debug traces in teh actual progran code.
 #
-DEBUG = -g -pg -D DBG_ON
-#DEBUG =
+#DEBUG = -g -pg -D DBG_ON
+DEBUG =
 GRAPH =
 #GRAPH = -D GRAPH_OUTPUT
 
