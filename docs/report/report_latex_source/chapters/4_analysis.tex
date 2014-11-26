@@ -1,0 +1,43 @@
+\section{Branch Predictor Performance Analysis}
+The branch predictor's performance depends on many factors such as number of bits available to store the history of predictions, size of the predictor table, size of the branch target buffer and the branch instruction patterns themselves. In this section, we will analyze the data that we obtained in section 3 for bimodal and ghsare predictors.
+
+\subsection{Analysis of Bimodal Predictor}
+From the graphs in figures \ref{fig:bimodal_gcc}, \ref{fig:bimodal_jpeg} and \ref{fig:bimodal_perl}, it can be clearly seen that the misprediction rate decreases as `m' value increases. This is due to the fact that using more bits of PC to index the predictor table reduces the collision domain of branch instructions in the predictor table. But, this also increases the storage cost as every additional bit used doubles the memory requirements. 
+
+\subsubsection{Benchmark Comparison}
+From table \ref{tab:bimodal} it can be inferred that jpeg trace has the lowest misprediction rate among all given benchmarks, followed by perl and finally gcc. This could be attributed to the reason that jpeg benchmark has the branch instructions in a widely distributed manner thus reducing the collisions within the predictor table.
+
+\subsubsection{Best Design Selection}
+In this section, we choose the best possible design (lowest misprediction rate) for each given benchmark with the constraint that the size of the predictor table should be no more than 16 KB.
+
+From section 2.3, we know that the size of the bimodal predictor table is defined by `m'. i.e., size of the predictor table = 2 * 2\textsuperscript{m} bits.
+
+\begin{itemize}
+\item gcc: For a bimodal predictor table size of 16KB, we can use up to 16 bits in PC (2 * 2\textsuperscript{17}/8192 = 16 KB). From table \ref{tab:bimodal}, it can be observed that for m = 16 and gcc trace, the misprediction rate is 11.21, which is better than the rates for lower values of m.
+
+\item jpeg: For jpeg trace in table \ref{tab:bimodal}, bimodal predictor misprediction rate saturates at m = 13. So, we can build a table of size (2 * 2\textsuperscript{13}) = 2 KB.
+
+\item perl: For m = 13, the misprediction rate is 8.92 and for higher values of m, the misprediction rate is less by a negligible value. So, we can safely build a predictor table of size 2 KB.
+\end{itemize}
+
+\subsection{Analysis of Gshare Predictor}
+From the graphs in figures \ref{fig:gshare_gcc}, \ref{fig:gshare_jpeg} and \ref{fig:gshare_perl} it can be inferred that the misprediciton rate decreases as `m' increases as expected. The curve flattens for higher values of `m' (for gcc) and for higher values of `n' (for jpeg and perl).
+
+But, the graphs also exhibit ``laws of dimnishing" returns for `n' value. i.e,, while increasing `n' enables more bits in history register to XOR with PC (thus minimizing the collision domain), it increases the overall misprediction rate of the predictor. 
+
+\subsubsection{Benchmark Comparison}
+The benchmarks for ghsare are similar to that of bimodal predictor. The jpeg trace has much more wide distribution of the branch instructions in the predictor tables (and thus has less collisions) and thereby has the lowest misprediction rate. Of the remaining two, perl has better misprediction rate than gcc trace. The results of the experiments for different benchmarks are tabulated in tables \ref{tab:gshare_gcc},\ref{tab:gshare_jpeg} and \ref{tab:gshare_perl} for reference. 
+
+\subsubsection{Best Design Selection}
+In this section, we choose the best possible design (lowest misprediction rate) for each given benchmark with the constraint that the size of the predictor table should be no more than 16 KB.
+
+From section 2.3, we know that the size of the predictor table is defined by `m'. i.e., size of the predictor table = 2 * 2\textsuperscript{m} bits.
+
+\begin{itemize}
+\item gcc: From table \ref{tab:gshare_gcc}, it can be seen that the misprediction rate is lower for lower values of n. i.e., for m \textless 14 and n = 2, the misprediciton rate is less. Also, the misprediction rate is less by a negligible value for m \textgreater 13. So, we can use m = 13 and n = 2 for our predictor table to get best results. The size of the predictor table for this configuration will be ((2\textsuperscript{13}/8) * 2) = 2 KB, \textless 16 KB constraint.
+
+\item jpeg: From the graph in figure \ref{fig:gshare_jpeg}, it is very clear that the misprediction rate is the lowest for n = 8 and m = 12. The size of the predictor table for such a configuration would be ((2\textsuperscript{12}/8) * 2) = 1 KB, which is way less than the 16 KB constraint.
+
+\item perl: Similar to jpeg benchmark, the misprediction rate is lowest for n = 8 and m = 12 for perl benchmark from table \ref{tab:gshare_perl}. The curve in figure \ref{fig:gshare_perl} flattens out for higher values of n and m after that. So, the predictor table size would be similar to that of jpeg benchmark, 1 KB.
+\end{itemize}
+

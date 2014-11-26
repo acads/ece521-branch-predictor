@@ -1,0 +1,45 @@
+\section{Formulas}
+Some of the important formulas that are used to characterize branch predictor performance are briefly discussed in this section.
+
+\subsection{Program Counter to Branch Predictor Table Index Conversion}
+The branch instruction addresses are always 4-byte aligned starting from 0. Thus, the last two bits of all addresses will be zero. Since, we use a part of lower order bits of the instruction address as an index to the predictor table, we need to ignore the leftmost 2-bits to minimize collisions.
+
+\subsubsection{Index Calculation for Bimodal Predictor}
+The bimodal predictor table index for bimodal predictor can be calculated using the below formula.
+
+\begin{verbatim}
+                            pc >>= 2;
+                            index = m-bit lower order mask
+                            index &= pc
+\end{verbatim}
+
+\subsubsection{Index Calculation for Gshare Predictor}
+In gshare preditor, the global history register is also used in index calculation. This minimizes the number of collisions in the predictor table. The gshare predictor table index for bimodal predictor can be calculated using the below formula.
+
+\begin{verbatim}
+                            pc >> = 2
+                            index = m-bit lower order mask
+                            index &= pc
+                            index ^= bhr
+\end{verbatim}
+
+\subsubsection{Index Calculation for Hybrid Predictor}
+The hybrid predictor uses a 2\textsuperscript{k} bit chooser table for prediction. Its index is calculated similar to bimodal index.
+
+\begin{verbatim}
+                            pc >>= 2;
+                            index = k-bit lower order mask
+                            index &= pc
+\end{verbatim}
+
+\subsection{Misprediciton Rate}
+Misprediciton rate denotes the ratio of number of branch mispredicitons (predicted differently from the actual branch outcome) by the predictor to the total number of branches. The lower the misprediction rate, the better is the perdictor's performance. This rate is one of the important attribute of a predictor which helps in understanding the characteristics it. All predictor performance improvement  methods would decrease the misprediction rate in one way or the other.
+
+\[mispredicitonRate = \frac{numMisPredicitons}{numTotalBranches}\]
+
+\subsection{Predictor Table Size}
+The predictor table size is determined by the number of bits that are available to index the table (i.e,2\textsuperscript{num of bits in index}), which is in turn governed by the value 'm'. 
+
+\begin{Verbatim}[commandchars=\\\{\},codes={\catcode`$=3\catcode`_=8}]
+            Size of predictor table = (# of bits in counter) * (2\textsuperscript{m}) bits
+\end{Verbatim}
